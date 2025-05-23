@@ -1,0 +1,86 @@
+services:
+  db:
+    image: mariadb
+    container_name: mariadb
+    environment:
+      - MYSQL_DATABASE=nbti
+      - MYSQL_USER=dao
+      - MYSQL_PASSWORD=dao
+      - MYSQL_ROOT_PASSWORD=mariadb
+    ports:
+      - "3306:3306"
+
+  redis:
+    image: redis
+    container_name: redis
+    ports:
+      - "6379:6379"
+
+  backend:
+    # 해당 디렉토리의 Dockerfile을 사용해 이미지를 빌드
+    build: ./backend
+    # 컨테이너 이름을 'backend'로 설정
+    container_name: backend
+    # 호스트의 8080 포트를 컨테이너의 8080 포트로 매핑
+    ports:
+      - "8080:8080"
+    depends_on:
+      - db
+      - elasticsearch
+      - logstash
+    environment:
+      - DB_URL=${DB_URL}
+      - DB_USERNAME=${DB_USERNAME}
+      - DB_PASSWORD=${DB_PASSWORD}
+      - REDIS_HOST=${REDIS_HOST}
+      - REDIS_PORT=${REDIS_PORT}
+      - REDIS_PASSWORD=${REDIS_PASSWORD}
+      - JWT_SECRET=${JWT_SECRET}
+      - JWT_EXPIRATION=${JWT_EXPIRATION}
+      - JWT_REFRESH_EXPIRATION=${JWT_REFRESH_EXPIRATION}
+      - API_KEY=${API_KEY}
+      - S3_ACCESS_KEY=${S3_ACCESS_KEY}
+      - S3_SECRET_KEY=${S3_SECRET_KEY}
+
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.17.0
+    container_name: elasticsearch
+    environment:
+      - discovery.type=single-node
+      - ES_JAVA_OPTS=-Xms512m -Xmx512m
+    ports:
+      - "9200:9200"
+    volumes:
+      # 뒤에 /usr 이렇게 쭉 나오는 부분이 container에 저장되는 공간을 의미하는 것
+      - es_data:/usr/share/elasticsearch/data
+
+  # spring boot의 로그가 여기로 전송이 되는 것이고, 이후에 elasticsearch로 output이 전송되는 것임
+  logstash:
+    image: docker.elastic.co/logstash/logstash:7.17.0
+    container_name: logstash
+    volumes:
+      - ./docker/logstash/logstash.conf:/usr/share/logstash/pipeline/logstash.conf
+    ports:
+      - "5000:5000"
+    depends_on:
+      - elasticsearch
+
+  kibana:
+    image: docker.elastic.co/kibana/kibana:7.17.0
+    container_name: kibana
+    ports:
+      - "5601:5601"
+    depends_on:
+      - elasticsearch
+
+  frontend:
+    # 해당 디렉토리의 Dockerfile을 사용해 이미지를 빌드
+    build: ./frontend
+    # 컨테이너 이름을 'frontend'로 설정
+    container_name: frontend
+    # 호스트의 5173 포트를 컨테이너의 5173 포트로 매핑
+    ports:
+      - "5173:5173"
+
+volumes:
+  es_data:
