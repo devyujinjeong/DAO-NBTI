@@ -1,0 +1,10 @@
+{
+  "archives": {
+    "windows_386": {
+      "hashes": [
+        "h1:SsrLjpsD9rltZmr24CBiAB3TAMmJ0SyplBh8oyAr/qQ="
+      ],
+      "url": "terraform-provider-kubernetes_2.37.1_windows_386.zip"
+    }
+  }
+}

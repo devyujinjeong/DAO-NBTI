@@ -3,7 +3,7 @@ import {useAuthStore} from "@/stores/auth.js";
 import {refreshUserToken} from "@/features/user/api.js";
 
 const api = axios.create({
-    baseURL : import.meta.env.VITE_API_BASE_URL,
+    baseURL: window.env?.VITE_API_BASE_URL || "/boot",
     headers : { 'Content-Type' : 'application/json' },
     // HttpOnly Cookie 사용하실 경우
     withCredentials : true

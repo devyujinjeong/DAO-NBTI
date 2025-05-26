@@ -1,0 +1,10 @@
+{
+  "archives": {
+    "windows_386": {
+      "hashes": [
+        "h1:VMNuSHZMkfsbrzvhpp6lzm2vWdmT/1vuUdW0x+Dsa0Q="
+      ],
+      "url": "terraform-provider-null_3.2.4_windows_386.zip"
+    }
+  }
+}
