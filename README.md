@@ -76,6 +76,10 @@
 <details>
 <summary> &emsp;2️⃣ 개발 배경 및 필요성</summary>
 
+<br>
+
+<img src="assets/images/info.png" alt="wbs" width="550"/>
+
 ### 🔹 사회적/인지적 배경
 
 #### 📉 기억하지 않아도 되는 시대 → 기억력·사고력의 퇴화
