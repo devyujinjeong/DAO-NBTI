@@ -1626,7 +1626,9 @@ pipeline {
 <details>
 <summary>4. Jenkins CI/CD 테스트 결과 화면</summary>
 
-<img src="assets/images/jenkinstest.gif">
+<img src="assets/images/jenkinstest_1.gif">
+
+<img src="assets/images/jenkinstest_2.gif">
 
 </details>
 
