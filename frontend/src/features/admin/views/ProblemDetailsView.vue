@@ -3,9 +3,11 @@ import { ref, computed, onMounted, watch } from 'vue'
 import api from "@/api/axios.js";
 import { useRouter, useRoute } from "vue-router";
 import SmallModal from "@/components/common/SmallModal.vue";
+import {useToast} from "vue-toastification";
 
 const router = useRouter()
 const route = useRoute()
+const toast = useToast();
 
 const isEditMode = ref(false)
 const parentCategories = ref([]);
@@ -35,14 +37,23 @@ const filteredCategories = computed(() => {
 });
 
 const fetchProblem = async () => {
-  const problemId = route.params.problemId;
-  const res = await api.get(`/admin/problems/${problemId}`)
-  const data = res.data.data.problem
-  problem.value = {
-    ...data,
-    parentCategory: findParentCategoryId(data.categoryId)
+  try {
+    const problemId = route.params.problemId;
+    const res = await api.get(`/admin/problems/${problemId}`)
+    const data = res.data.data.problem
+    problem.value = {
+      ...data,
+      parentCategory: findParentCategoryId(data.categoryId)
+    }
+    selectedFile.value = null;  // 초기화
+  } catch (e) {
+    if (e.status === 404) {
+      toast.error('존재하지 않는 문제입니다.');
+    } else {
+      toast.error('문제 정보를 불러오지 못했습니다.');
+    }
+    router.push('/admin/problems');
   }
-  selectedFile.value = null;  // 초기화
 }
 
 onMounted(async () => {
@@ -72,10 +83,10 @@ const onConfirmDelete = async () => {
   showDeleteModal.value = false
   try {
     await api.delete(`/admin/problems/${problem.value.problemId}`)
-    alert('삭제가 완료되었습니다.')
+    toast.success('삭제가 완료되었습니다.')
     router.replace('/admin/problems')
   } catch (error) {
-    alert('삭제 중 오류가 발생했습니다.')
+    toast.error('삭제 중 오류가 발생했습니다.')
   }
 }
 
@@ -126,35 +137,35 @@ const completeEdit = async () => {
       }
     });
 
-    alert('수정이 완료되었습니다.');
+    toast.success('수정이 완료되었습니다.');
     isEditMode.value = false;
     selectedFile.value = null;
     await fetchProblem();
   } catch (e) {
-    alert('수정 실패했습니다.');
-    console.error(e);
+    toast.error('수정 실패했습니다.');
+    // console.error(e);
   }
 }
 
 const validateRequest = () => {
   if (!problem.value.categoryId) {
-    alert('분야를 선택하세요.');
+    toast.error('분야를 선택하세요.');
     return false;
   }
   if (!problem.value.level) {
-    alert('난이도를 선택하세요.');
+    toast.error('난이도를 선택하세요.');
     return false;
   }
   if (!problem.value.answerTypeId) {
-    alert('답안 유형을 선택하세요.');
+    toast.error('답안 유형을 선택하세요.');
     return false;
   }
   if (!problem.value.correctAnswer) {
-    alert('정답을 입력하세요.');
+    toast.error('정답을 입력하세요.');
     return false;
   }
   if (!problem.value.contentImageUrl) {
-    alert('본문 사진을 등록하세요.');
+    toast.error('본문 사진을 등록하세요.');
     return false;
   }
   return true;

@@ -61,7 +61,6 @@ onMounted(fetchStudyResults);
         :correct="problems[selectedIndex].correct"
         :imageUrl="problems[selectedIndex].contentImageUrl"
     />
-    <ResultSummary :resultText="resultText" @go-home="goHome" />
   </div>
 </template>
 
@@ -87,6 +86,9 @@ onMounted(fetchStudyResults);
   font-size: 0.9rem;
   text-decoration: none;
   transition: background 0.2s ease;
+  border: none;
+  outline: none;
+  margin-bottom: 1.5rem;
 }
 .back-button:hover {
   background: #1e3a8a;

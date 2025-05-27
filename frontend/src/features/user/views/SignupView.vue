@@ -23,7 +23,6 @@ const insertable = ref(true);
 
 const idCheck = async () =>{
   try {
-    console.log(form)
     const response = await id_check(form.accountId);
     if (response.data.success === false) {
       throw new Error(response.data.message);
@@ -60,9 +59,7 @@ const signupRes = async () => {
     return
   }
   try{
-    console.log(form)
     const response = await signup(form);
-    console.log(response.data.success)
     if (response.data.success === false) {
       throw new Error(response.data.message);
     }

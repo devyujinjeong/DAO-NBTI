@@ -2,8 +2,10 @@
 import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import api from "@/api/axios.js"
+import {useToast} from "vue-toastification";
 
 const router = useRouter()
+const toast = useToast();
 
 const parentCategories = ref([]);
 const categories = ref([]);
@@ -51,7 +53,7 @@ const createProblem = async () => {
   }
 
   if (!problem.value.imageFile) {
-    alert('본문 사진을 등록하세요.');
+    toast.error('본문 사진을 등록하세요.');
     return;
   }
 
@@ -60,36 +62,37 @@ const createProblem = async () => {
   formData.append('imageFile', problem.value.imageFile);
 
   try {
-    await api.post('/admin/problems', formData, {
+    const response = await api.post('/admin/problems', formData, {
       headers: { "Content-Type": "multipart/form-data" }
     });
-    alert('문제가 성공적으로 등록되었습니다.');
-    router.push('/admin/problems/');
+    const problemId = response.data.data.problem.problemId;
+    toast.success(`문제가 성공적으로 등록되었습니다.`);
+    router.push(`/admin/problems/${problemId}`);
   } catch (e) {
-    alert('문제 등록에 실패했습니다.');
-    console.error(e);
+    toast.error('문제 등록에 실패했습니다.');
+    // console.error(e);
   }
 }
 
 const validateRequest = () => {
   if (!problem.value.categoryId) {
-    alert('분야를 선택하세요.');
+    toast.error('분야를 선택하세요.');
     return false;
   }
   if (!problem.value.level) {
-    alert('난이도를 선택하세요.');
+    toast.error('난이도를 선택하세요.');
     return false;
   }
   if (!problem.value.answerTypeId) {
-    alert('답안 유형을 선택하세요.');
+    toast.error('답안 유형을 선택하세요.');
     return false;
   }
   if (!problem.value.correctAnswer) {
-    alert('정답을 입력하세요.');
+    toast.error('정답을 입력하세요.');
     return false;
   }
   if (!problem.value.imageFile) {
-    alert('본문 사진을 등록하세요.');
+    toast.error('본문 사진을 등록하세요.');
     return false;
   }
   return true;

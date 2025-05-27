@@ -32,7 +32,7 @@ function login(){
 <template>
   <div class="section">
     <div class="heading">
-      로그인
+      비밀번호 재설정
     </div>
     <div class="form">
       <UserInput

@@ -4,7 +4,7 @@
         class="nav-arrow"
         :disabled="currentPage === 1"
         @click="changePage(currentPage - 1)">
-      &lt;
+        &laquo;
     </button>
 
     <span v-for="page in visiblePages" :key="page">
@@ -19,7 +19,7 @@
         class="nav-arrow"
         :disabled="currentPage === totalPages"
         @click="changePage(currentPage + 1)">
-      &gt;
+        &raquo;
     </button>
   </div>
 </template>
@@ -72,50 +72,32 @@ const visiblePages = computed(() => {
 
 <style scoped>
 .paging-bar {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 6px;
-  margin: 20px 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 0.5rem;
+    margin-top: 1rem;
 }
 
-.pageBtn {
-  background: transparent;
-  border: none;
-  padding: 6px 10px;
-  font-size: 14px;
-  color: #333;
-  cursor: pointer;
-  border-radius: 6px;
-  transition: background-color 0.2s;
+.paging-bar button {
+    padding: 0.4rem 0.8rem;
+    border: 1px solid #ddd;
+    background: #fff;
+    border-radius: 4px;
+    cursor: pointer;
 }
 
-.pageBtn:hover {
-  background-color: #f0f0f0;
-}
-
-.pageBtn.active {
-  background-color: #f1f1f1;
-  font-weight: bold;
+.paging-bar button.active {
+    background: #007bff;
+    color: #fff;
+    border-color: #007bff;
 }
 
 .nav-arrow {
-  background: transparent;
-  border: none;
-  font-size: 18px;
-  cursor: pointer;
-  padding: 4px 8px;
-  color: #333;
-  border-radius: 6px;
-  transition: background-color 0.2s;
-}
-
-.nav-arrow:hover:not(:disabled) {
-  background-color: #f0f0f0;
-}
-
-.nav-arrow:disabled {
-  color: #ccc;
-  cursor: not-allowed;
+    padding: 0.4rem 0.8rem;
+    border: 1px solid #ddd;
+    background: #fff;
+    border-radius: 4px;
+    cursor: pointer;
 }
 </style>

@@ -23,17 +23,13 @@ const authSuccess = ref(false);
 
 
 const findPassword = async () => {
-  console.log(`${form.loginId} ${form.name}`);
   try {
     const response = await fetchFindPassword({
       accountId: form.loginId,
       name: form.name
     });
-
-    console.log('통신 성공', response.data)
     const accessToken = response.data.data.accessToken;
-    console.log(`토큰 ${accessToken}`)
-    authStore.setAuth(accessToken);
+    authStore.setTempAuth(accessToken);
     modalMessage.value = "인증에 성공했습니다."
     authSuccess.value=true
   }  catch (error) {

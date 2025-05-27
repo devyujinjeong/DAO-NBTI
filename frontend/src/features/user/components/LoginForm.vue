@@ -25,12 +25,14 @@ function login(){
   emit('login');
 }
 
-
-
 </script>
 
 <template>
-  <div class="section">
+  <div
+      class="section"
+      tabindex="0"
+      @keydown.enter="login"
+  >
     <div class="heading">
       로그인
     </div>
@@ -48,7 +50,8 @@ function login(){
 
       <BlueButton
           text="로그인"
-          @click="login"/>
+          @click="login"
+      />
     </div>
     <RouterLink to="/find-password">비밀번호 찾기</RouterLink>
   </div>

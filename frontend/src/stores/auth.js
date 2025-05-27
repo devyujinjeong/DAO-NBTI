@@ -5,6 +5,7 @@ export const useAuthStore = defineStore('auth', () => {
     const accessToken = ref(null);
     const userRole = ref(null);
     const expirationTime = ref(null);
+    const tempAccessToken = ref(null);
 
     // 인증 되어 있는지 확인하는 getter 값
     const isAuthenticated = computed(() =>
@@ -25,10 +26,19 @@ export const useAuthStore = defineStore('auth', () => {
         }
     }
 
+    function setTempAuth(at) {
+        tempAccessToken.value = at;
+        accessToken.value = null;
+        userRole.value = null;
+        expirationTime.value = null;
+    }
+
     function clearAuth() {
         accessToken.value = null;
         userRole.value = null;
         expirationTime.value = null;
+        tempAccessToken.value = null;
+        setTempAuth.value = null;
     }
 
     return {
@@ -36,8 +46,10 @@ export const useAuthStore = defineStore('auth', () => {
         userRole,
         expirationTime,
         isAuthenticated,
+        tempAccessToken,
         setAuth,
-        clearAuth
+        clearAuth,
+        setTempAuth
     }
 
 });

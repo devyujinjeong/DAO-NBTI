@@ -21,6 +21,5 @@ import TestStart from "@/features/main/components/TestStart.vue";
   margin: 0 auto;
   display: flex;
   flex-direction: column;
-  gap: 40px;
 }
 </style>

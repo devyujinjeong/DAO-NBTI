@@ -84,11 +84,15 @@ function handleKakaoShare() {
         <hr />
         <div class="share-options">
             <div class="option" @click="handleKakaoShare" >
-                <img :src="kakaoIcon" alt="카카오 공유"/>
+                <div class="icon-circle">
+                    <img class="icon-image" :src="kakaoIcon" alt="카카오 공유" />
+                </div>
                 <p>카카오톡</p>
             </div>
             <div class="option" @click="copyLink">
-                <img :src="linkIcon" alt="링크복사" />
+                <div class="icon-circle">
+                    <img class="icon-image" :src="linkIcon" alt="링크복사"/>
+                </div>
                 <p>링크복사</p>
             </div>
         </div>
@@ -163,14 +167,21 @@ hr {
     background: #f3f4f6;
 }
 
-.option img {
+.icon-circle {
     width: 48px;
     height: 48px;
-    object-fit: contain;
     border-radius: 50%;
-    margin-bottom: 0.5rem;
     background: #f5f5f5;
-    padding: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 0.75rem;
+}
+    
+.icon-image {
+    width: 28px;
+    height: 28px;
+    object-fit: contain;
 }
 
 .option p {

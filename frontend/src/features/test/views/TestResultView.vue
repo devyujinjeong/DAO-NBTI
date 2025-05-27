@@ -9,17 +9,18 @@ import {useAuthStore} from "@/stores/auth.js";
 
 const route = useRoute();
 const router = useRouter();
-const toast = useToast();
 const authStore = useAuthStore();
+const toast = useToast();
 
 const radarCanvas = ref(null);
-const modalVisible = ref(false);
-const modalMessage = ref('');
-const isUser = computed(() => authStore.isAuthenticated);
-const testResultId = route.params.testResultId;
 
-console.log('저장된 회원의 아이디는? : ', authStore.userId)
-console.log('받은 testResultId:', testResultId)
+const urlModalVisible = ref(false);
+const urlModalMessage = ref('');
+
+const isUser = computed(() => authStore.isAuthenticated);
+const isUserTest = ref(false);
+const testResultId = route.params.testResultId;
+const maxScore = ref(0);
 
 const categoryIcons = {
     '언어 이해':   new URL('@/assets/images/language_comprehension.png', import.meta.url).href,
@@ -40,6 +41,10 @@ onMounted(async () => {
 
         scores.value = res.data.data.scores;
         summary.value = res.data.data.aiText;
+
+        const userId = res.data.data.userId;
+        isUserTest.value = !!userId;
+        const maxScoreValue = userId ? 6 : 2;
 
         await nextTick();
 
@@ -63,7 +68,7 @@ onMounted(async () => {
                 scales: {
                     r: {
                         min: 0,
-                        max: 6,
+                        max: maxScoreValue,
                         ticks: { stepSize: 1, color: '#555' },
                         grid: { color: '#ddd' },
                         pointLabels: { color: '#333', font: { size: 14 } }
@@ -72,24 +77,37 @@ onMounted(async () => {
                 plugins: { legend: { display: false } }
             }
         })
+
+        maxScore.value = maxScoreValue;
+
     } catch (e) {
-        toast.error('결과 불러오기에 실패했습니다.')
-        console.error(e)
+        if (scores == null) {
+            toast.error('결과 불러오기에 실패했습니다.')
+        } else{
+            toast.error('에러가 발생했습니다.')
+        }
+
     }
 })
 
 /* 모달과 관련된 함수들 (open, close) */
 function openModal() {
-    modalMessage.value = window.location.href
-    modalVisible.value = true
+    urlModalMessage.value = window.location.href
+    urlModalVisible.value = true
 }
 
 function closeModal() {
-    modalVisible.value = false
+    urlModalVisible.value = false
 }
 
 /* 마이페이지에 저장하는 api*/
 async function saveToMyPage() {
+    if (!isUser.value) {
+        urlModalMessage.value = '회원가입한 사용자만 이용할 수 있습니다!';
+        urlModalVisible.value = true;
+        return;
+    }
+
     try {
         await saveResultToMyPage(testResultId);
         toast.success('마이페이지에 저장되었습니다.');
@@ -100,7 +118,6 @@ async function saveToMyPage() {
             if (code === '30005') {
                 toast.error('해당 검사는 본인이 한 검사가 아닙니다.');
             }
-
         } else {
             toast.error('마이페이지 저장에 실패했습니다. 다시 시도해주세요.');
         }
@@ -115,7 +132,7 @@ function goToMain() {
 
 <template>
     <div class="container">
-        <h2>검사 결과</h2>
+        <h2>인지 능력 검사 결과</h2>
 
         <div class="chart-container">
             <canvas ref="radarCanvas"></canvas>
@@ -138,7 +155,7 @@ function goToMain() {
                         <div class="score-num">{{ item.score }}점</div>
                     </div>
                     <div class="score-bar">
-                        <div class="bar" :style="{ width: (item.score / 6) * 100 + '%' }"></div>
+                        <div class="bar" :style="{ width: (item.score / maxScore) * 100 + '%' }"></div>
                     </div>
                     <div class="category-content">{{ item.description }}</div>
                 </div>
@@ -151,14 +168,22 @@ function goToMain() {
             <p>{{ summary }}</p>
         </div>
 
+        <div class="guest-hint" v-if="!isUserTest">
+            <p>
+                🔒 회원 가입하면 더 다양한 문제를 풀 수 있습니다.
+            </p>
+        </div>
+
         <div class="buttons">
             <button class="btn" @click="saveToMyPage" v-if="isUser">저장하기</button>
             <button class="btn" @click="openModal">공유하기</button>
+
             <Url
-                :visible="modalVisible"
-                :message="modalMessage"
+                :visible="urlModalVisible"
+                :message="urlModalMessage"
                 @close="closeModal"
             />
+
             <button class="btn" @click="goToMain">메인으로</button>
         </div>
     </div>
@@ -175,7 +200,7 @@ body {
 .container {
     max-width: 1000px;
     margin: 4rem auto;
-    background: #ffffff;
+    background: #f9f9fa;
     border-radius: 16px;
     padding: 3rem 2rem;
     box-shadow: 0 6px 20px rgba(0, 0, 0, 0.06);
@@ -239,8 +264,12 @@ h2 {
     justify-content: space-between;
     margin-bottom: 0.75rem;
 }
+.score-content {
+    width: 100%;
+}
 
 .score-bar {
+    width: 100%;
     height: 10px;
     background: #f1f5f9;
     border-radius: 8px;
@@ -296,4 +325,16 @@ h2 {
 .btn:hover {
     background: #1e3a8a;
 }
+
+.guest-hint {
+    margin-top: 2rem;
+    padding: 1rem;
+    background: #fff4f4;
+    border: 1px solid #fca5a5;
+    border-radius: 12px;
+    text-align: center;
+    color: #b91c1c;
+    font-size: 0.95rem;
+}
+
 </style>

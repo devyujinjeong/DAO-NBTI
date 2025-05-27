@@ -66,3 +66,13 @@ export function fetchObjectionDetail(objectionId) {
  **/
 export const fetchUserInfo = () => api.get('/user/info')
 
+/**
+ * 회원 탈퇴
+ **/
+export const fetchUserWithdraw = (password) => api.delete(
+    '/user/withdraw', {
+        data: {
+            password: password
+        }
+    }
+)

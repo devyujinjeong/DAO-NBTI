@@ -5,7 +5,7 @@ export const testRoutes = [
         component: () => import('@/features/test/views/TestView.vue')
     },
     {
-        path: '/now/test-result/:testResultId',
+        path: '/test-result/:testResultId',
         name: 'NowTestResult',
         component: () => import('@/features/test/views/TestResultView.vue')
     }

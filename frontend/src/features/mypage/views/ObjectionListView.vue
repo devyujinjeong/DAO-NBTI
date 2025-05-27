@@ -109,13 +109,13 @@ onMounted(() => {
           <td>{{ item.parentCategoryName || '-' }}</td>
           <td>{{ item.reason || '-' }}</td>
           <td>
-              <span
-                  v-if="item.status"
-                  class="status"
-                  :class="item.status.toLowerCase()"
-              >
-                {{ statusLabel[item.status] || '알 수 없음' }}
-              </span>
+            <span
+                v-if="item.status"
+                class="status"
+                :class="item.status.toLowerCase()"
+            >
+              {{ statusLabel[item.status] || '알 수 없음' }}
+            </span>
             <span v-else class="status unknown">알 수 없음</span>
           </td>
           <td>{{ item.createdAt?.replace('T', ' ').slice(0, 16) || '-' }}</td>
@@ -145,22 +145,29 @@ onMounted(() => {
               {{ statusLabel[selectedObjection?.status] || '알 수 없음' }}
             </span>
           </div>
+
           <div class="modal-meta">
             <div><strong>분야</strong> {{ selectedObjection?.parentCategoryName || '-' }}</div>
-            <div><strong>제출일시</strong>
-              {{ selectedObjection?.createdAt?.replace('T', ' ').slice(0, 16) || '-' }}
-            </div>
+            <div><strong>제출일시</strong> {{ selectedObjection?.createdAt?.replace('T', ' ').slice(0, 16) || '-' }}</div>
           </div>
+
           <div class="modal-reason">
             <p class="label">이의제기 사유</p>
             <p class="value">{{ selectedObjection?.reason || '-' }}</p>
+          </div>
+
+          <div
+              v-if="selectedObjection?.status === 'ACCEPTED' || selectedObjection?.status === 'REJECTED'"
+              class="admin-comment-box"
+          >
+            <p class="admin-comment-label">관리자 처리 사유</p>
+            <p class="admin-comment-text">{{ selectedObjection?.information || '-' }}</p>
           </div>
         </div>
       </template>
     </BigModal>
   </main>
 </template>
-
 
 <style scoped>
 .section {
@@ -247,6 +254,7 @@ onMounted(() => {
 .detail-button:hover {
   background: #1e40af;
 }
+
 .modal-detail {
   text-align: left;
   font-size: 0.95rem;
@@ -264,22 +272,48 @@ onMounted(() => {
   display: flex;
   justify-content: space-between;
   font-weight: 500;
-  background: #f5f7fa;
-  padding: 0.75rem 1rem;
-  border-radius: 8px;
+  background: #f8fafc;
+  padding: 1rem 1.25rem;
+  border-radius: 10px;
+  color: #334155;
+  font-size: 0.95rem;
 }
 .modal-reason {
-  background: #f9fafb;
-  border: 1px solid #e5e7eb;
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
   border-radius: 10px;
-  padding: 1rem;
+  padding: 1.2rem 1.4rem;
 }
 .modal-reason .label {
-  font-weight: bold;
+  font-weight: 600;
+  font-size: 0.95rem;
+  color: #1e293b;
   margin-bottom: 0.5rem;
 }
 .modal-reason .value {
+  font-size: 0.95rem;
   line-height: 1.6;
+  color: #334155;
+  white-space: pre-wrap;
+}
+
+.admin-comment-box {
+  background-color: #f9f9fb;
+  border: 1px solid #e4e7ec;
+  border-radius: 10px;
+  padding: 1.2rem 1.4rem;
+  margin-top: 0.5rem;
+}
+.admin-comment-label {
+  font-weight: 600;
+  font-size: 0.95rem;
+  color: #1f2937;
+  margin-bottom: 0.5rem;
+}
+.admin-comment-text {
+  font-size: 0.95rem;
+  line-height: 1.6;
+  color: #475569;
   white-space: pre-wrap;
 }
 </style>

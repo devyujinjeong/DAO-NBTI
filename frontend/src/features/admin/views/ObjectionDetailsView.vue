@@ -1,10 +1,12 @@
 <script setup>
-import { ref, onMounted } from 'vue'
-import { useRoute, useRouter } from 'vue-router'
+import {ref, onMounted} from 'vue'
+import {useRoute, useRouter} from 'vue-router'
 import api from '@/api/axios.js'
+import {useToast} from "vue-toastification";
 
 const route = useRoute()
 const router = useRouter()
+const toast= useToast()
 
 const objectionId = route.params.objectionId
 const objection = ref(null)
@@ -16,17 +18,17 @@ const fetchObjection = async () => {
     const response = await api.get(`/admin/objections/${objectionId}`)
     objection.value = response.data.data.objectionDetails;
   } catch (e) {
-    alert('이의 제기 정보를 불러오지 못했습니다.')
-    console.error(e)
+    toast.error('이의 제기 정보를 불러오지 못했습니다.')
+    // console.error(e)
     router.push('/admin/objections')
   } finally {
-    isLoading.value = false
+    isLoading.value = false;
   }
 }
 
 const startEditing = () => {
   if (objection.value.status !== 'PENDING') {
-    alert('이미 처리 완료된 이의 제기입니다.');
+    toast.error('이미 처리 완료된 이의 제기입니다.');
     return;
   }
   isEditing.value = true
@@ -39,22 +41,22 @@ const updateObjection = async () => {
       status: objection.value.status,
       information: objection.value.information,
     })
-    alert('처리가 완료되었습니다.')
+    toast.success('처리가 완료되었습니다.')
     isEditing.value = false
     router.push('/admin/objections')
   } catch (e) {
-    alert('처리 중 오류가 발생했습니다.')
-    console.error(e)
+    toast.error('처리 중 오류가 발생했습니다.')
+    // console.error(e)
   }
 }
 
 const validateRequest = () => {
   if (objection.value.status === 'PENDING') {
-    alert('변경할 상태는 승인 또는 반려여야 합니다.');
+    toast.error('변경할 상태는 승인 또는 반려여야 합니다.');
     return false;
   }
   if (objection.value.status === 'REJECTED' && !objection.value.information) {
-    alert('이의 제기 반려 시 처리 내용을 필수로 입력해야 합니다.');
+    toast.error('이의 제기 반려 시 처리 내용을 필수로 입력해야 합니다.');
     return false;
   }
   return true;
@@ -93,7 +95,7 @@ onMounted(async () => {
   <main class="content">
     <section class="section">
       <template v-if="!isEditing">
-      <h2>이의 제기 상세</h2>
+        <h2>이의 제기 상세</h2>
       </template>
       <template v-else>
         <h2>이의 제기 상세 - 답변</h2>
@@ -101,21 +103,26 @@ onMounted(async () => {
 
       <div class="card" v-if="!isLoading && objection">
         <div class="form-group">
-          <label>회원 아이디</label>
-          <input type="text" :value="objection.accountId" disabled />
+          <label>이의 제기 ID</label>
+          <input type="text" :value="objection.objectionId" disabled/>
+        </div>
+
+        <div class="form-group">
+          <label>회원 ID</label>
+          <input type="text" :value="objection.accountId" disabled/>
         </div>
 
         <div class="form-group">
           <label>문제 ID</label>
           <div class="form-row">
-            <input type="text" :value="objection.problemId" disabled />
+            <input type="text" :value="objection.problemId" disabled/>
             <button class="btn" @click="goToProblem">문제 확인</button>
           </div>
         </div>
 
         <div class="form-group">
           <label>제출 일시</label>
-          <input type="text" :value="formatDateTimeWithWeekday(objection.createdAt)" disabled />
+          <input type="text" :value="formatDateTimeWithWeekday(objection.createdAt)" disabled/>
         </div>
 
         <div class="form-group">
@@ -145,11 +152,13 @@ onMounted(async () => {
         <div class="top-btn-group" v-else>
           <button class="btn" @click="goToList">목록으로</button>
         </div>
-
-
       </div>
-
-      <div v-else-if="isLoading">로딩 중...</div>
+      <div v-else-if="isLoading" class="card">
+        <div class="loading-overlay">
+          <div class="spinner"/>
+          <p>결과를 불러오는 중입니다...</p>
+        </div>
+      </div>
     </section>
   </main>
 </template>
@@ -164,7 +173,7 @@ onMounted(async () => {
   background: #fff;
   border-radius: 12px;
   padding: 2rem;
-  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
 }
 
 .flex {
@@ -229,9 +238,38 @@ onMounted(async () => {
 
 /* readonly지만 disabled처럼 스타일 부여 */
 .readonly-look {
-  background-color: #f5f5f5;  /* 회색 배경 */
-  color: #777;                /* 텍스트 색상 */
-  cursor: not-allowed;        /* 마우스 커서 */
-  pointer-events: none;       /* 클릭 막기 */
+  background-color: #f5f5f5; /* 회색 배경 */
+  color: #777; /* 텍스트 색상 */
+  cursor: not-allowed; /* 마우스 커서 */
+  pointer-events: none; /* 클릭 막기 */
+}
+
+.spinner {
+  width: 40px;
+  height: 40px;
+  border: 4px solid #3b82f6;
+  border-top-color: transparent;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-bottom: 1rem;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.loading-overlay {
+  /* position: absolute; */
+  top: 0;
+  left: 0;
+  z-index: 50;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
 }
 </style>

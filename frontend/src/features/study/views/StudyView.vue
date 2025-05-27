@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted, watchEffect, computed, onBeforeUnmount } from 'vue'
+import { ref, onMounted, watchEffect, computed, onBeforeUnmount, nextTick } from 'vue'
 import { useRoute } from 'vue-router'
 import { getProblems, submitAnswers } from "@/features/study/api.js"
 import router from "@/router/index.js"
@@ -27,13 +27,26 @@ const time = ref(0)
 const timerDisplay = ref('0')
 let interval
 
-const userAnswer = ref('')
+const hasStarted = ref(false)
+
+const showDigits = ref(false)
+const digitsToShow = ref([])
+const digitDisplayIndex = ref(0)
+
+const userAnswerParts = ref([])
 const userAnswers = ref([])
+
+const correctAnswerParts = ref([])
 
 const isImageModalOpen = ref(false)
 const isConfirmModalOpen = ref(false)
 
+const inputRefs = ref([])
+const singleInputRef = ref(null)
+
 function openImageModal() {
+  const current = problems.value[currentProblemIndex.value]
+  if (current?.categoryId === 17) return
   isImageModalOpen.value = true
 }
 function closeImageModal() {
@@ -47,7 +60,6 @@ function confirmAndContinue() {
   submitAnswerAndContinue()
 }
 
-// ESC로 닫기
 function onEsc(e) {
   if (e.key === 'Escape') closeImageModal()
 }
@@ -60,19 +72,87 @@ onBeforeUnmount(() => {
   window.removeEventListener('keydown', onEsc)
 })
 
-// 문제 가져오기
 async function fetchProblems() {
   try {
     const res = await getProblems(categoryId.value, level.value)
     problems.value = res.data.data.slice(0, 3)
     currentProblemIndex.value = 0
-    startTimer()
+    updateAnswerFields()
   } catch (e) {
     console.error('문제 불러오기 실패:', e)
   }
 }
 
-// 타이머 시작
+function updateAnswerFields() {
+  clearInterval(interval)
+  hasStarted.value = false
+  showDigits.value = false
+  digitDisplayIndex.value = 0
+
+  const current = problems.value[currentProblemIndex.value]
+  const correct = current?.correctAnswer ?? ''
+  const categoryIdVal = current?.categoryId
+  const levelVal = current?.level
+
+  const isForceSingleInput = categoryIdVal === 17 && levelVal === 3
+  correctAnswerParts.value = isForceSingleInput
+      ? ['']
+      : (correct.includes(',') ? correct.split(',').map(s => s.trim()) : [''])
+  userAnswerParts.value = correctAnswerParts.value.map(() => '')
+
+  const needsDigitDisplay = categoryIdVal === 17 && [1,2,3].includes(levelVal)
+  if (!needsDigitDisplay) {
+    startTimer()
+  }
+
+  // 포커싱 처리
+  nextTick(() => {
+    if (correctAnswerParts.value.length > 1) {
+      inputRefs.value[0]?.focus()
+    } else {
+      singleInputRef.value?.focus()
+    }
+  })
+}
+
+function displayDigitsByLevel(correctAnswer, level) {
+  let digits = correctAnswer.split('')
+  if (level === 2) digits = digits.reverse()
+  else if (level === 3) digits = shuffle([...digits])
+
+  digitsToShow.value = digits
+  digitDisplayIndex.value = 0
+  showDigits.value = true
+
+  let idx = 1
+  const intervalId = setInterval(() => {
+    if (idx < digits.length) {
+      digitDisplayIndex.value = idx
+      idx++
+    } else {
+      clearInterval(intervalId)
+      showDigits.value = false
+      startTimer()
+    }
+  }, 1500)
+}
+
+function shuffle(array) {
+  for (let i = array.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1))
+    ;[array[i], array[j]] = [array[j], array[i]]
+  }
+  return array
+}
+
+function startDigitDisplay() {
+  const current = problems.value[currentProblemIndex.value]
+  if (current) {
+    hasStarted.value = true
+    displayDigitsByLevel(current.correctAnswer, current.level)
+  }
+}
+
 function startTimer() {
   if (interval) clearInterval(interval)
   const current = problems.value[currentProblemIndex.value]
@@ -101,14 +181,15 @@ async function submitAllAnswers() {
   }
 }
 
+function getJoinedAnswer() {
+  return userAnswerParts.value.map(part => part.trim()).join(', ')
+}
+
 function goToNextProblem() {
-  // 시간이 남았고, 답안이 비어 있다면 모달 띄움
-  if (time.value > 0 && userAnswer.value.trim() === '') {
+  if (time.value > 0 && userAnswerParts.value.every(p => p.trim() === '')) {
     isConfirmModalOpen.value = true
     return
   }
-
-  // 시간이 다 됐거나 답안이 입력되어 있으면 바로 다음으로
   submitAnswerAndContinue()
 }
 
@@ -116,13 +197,12 @@ function submitAnswerAndContinue() {
   const current = problems.value[currentProblemIndex.value]
   userAnswers.value.push({
     problemId: current.problemId,
-    userAnswer: userAnswer.value
+    userAnswer: getJoinedAnswer()
   })
 
   if (currentProblemIndex.value < totalProblems.value - 1) {
     currentProblemIndex.value++
-    userAnswer.value = ''
-    startTimer()
+    updateAnswerFields()
   } else {
     clearInterval(interval)
     submitAllAnswers()
@@ -136,6 +216,7 @@ watchEffect(() => {
           : 0
 })
 </script>
+
 
 <template>
   <div class="timer">{{ timerDisplay }}</div>
@@ -152,12 +233,44 @@ watchEffect(() => {
           alt="문제 이미지"
           @click="openImageModal"
       />
+      <div
+          v-if="showDigits"
+          :key="digitDisplayIndex"
+          class="digit-overlay"
+      >
+        {{ digitsToShow[digitDisplayIndex] }}
+      </div>
+    </div>
+
+    <div
+        class="button-group"
+        v-if="!hasStarted && problems[currentProblemIndex].categoryId === 17 && [1, 2, 3].includes(problems[currentProblemIndex].level)">
+      <button class="btn" @click="startDigitDisplay">시작</button>
     </div>
 
     <div class="answer-input">
-      정답 :
-      <input type="text" v-model="userAnswer" />
+      <label class="answer-label">정답 :</label>
+      <div class="answer-fields">
+        <div v-if="correctAnswerParts.length > 1" class="multi-inputs">
+          <input
+              v-for="(part, index) in correctAnswerParts"
+              :key="index"
+              type="text"
+              v-model="userAnswerParts[index]"
+              ref="inputRefs"
+              :placeholder="`A${index + 1}`"
+          />
+        </div>
+        <div v-else>
+          <input
+              type="text"
+              v-model="userAnswerParts[0]"
+              ref="singleInputRef"
+          />
+        </div>
+      </div>
     </div>
+
 
     <div class="button-group">
       <button class="btn" @click="goToNextProblem">다음</button>
@@ -223,6 +336,7 @@ watchEffect(() => {
   display: flex;
   justify-content: center;
   margin-bottom: 2rem;
+  position: relative;
 }
 
 .question-image {
@@ -235,17 +349,54 @@ watchEffect(() => {
   cursor: pointer;
 }
 
-.answer-input {
-  margin-top: 1.5rem;
+.digit-overlay {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  display: flex;           /* flex로 중앙 정렬 */
+  align-items: center;
+  justify-content: center;
+  font-size: 6rem;
+  font-weight: bold;
+  color: #3b82f6;
+  pointer-events: none;
+  animation: fadeOpacity 1s ease-in-out;
 }
 
-.answer-input input {
+@keyframes fadeOpacity {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+.answer-input {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  margin-top: 1.5rem;
+  flex-wrap: wrap;
+}
+
+.answer-label {
+  font-weight: bold;
+  white-space: nowrap;
+}
+
+.answer-fields input {
   padding: 0.5rem 1rem;
   font-size: 1rem;
   border-radius: 8px;
   border: 1px solid #ccc;
   width: 100px;
   text-align: center;
+}
+
+.multi-inputs {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  justify-content: center;
 }
 
 .button-group {
@@ -266,18 +417,14 @@ watchEffect(() => {
   transition: background 0.2s ease;
 }
 
-.btn:hover {
-  background: #1e3a8a;
-}
+.btn:hover { background: #1e3a8a; }
 
 .cancel {
   background-color: #e5e7eb;
   color: #111;
 }
 
-.cancel:hover {
-  background-color: #d1d5db;
-}
+.cancel:hover { background-color: #d1d5db; }
 
 .timer {
   position: absolute;
@@ -296,10 +443,8 @@ watchEffect(() => {
 
 .modal-overlay {
   position: fixed;
-  top: 0;
-  left: 0;
-  width: 100vw;
-  height: 100vh;
+  top: 0; left: 0;
+  width: 100vw; height: 100vh;
   background-color: rgba(0, 0, 0, 0.75);
   display: flex;
   justify-content: center;
@@ -307,16 +452,9 @@ watchEffect(() => {
   z-index: 1000;
 }
 
-.modal-wrapper {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
+.modal-wrapper { display: flex; align-items: center; justify-content: center; }
 
-.modal-image-container {
-  position: relative;
-  display: inline-block;
-}
+.modal-image-container { position: relative; display: inline-block; }
 
 .modal-image {
   max-width: 90vw;
@@ -328,15 +466,13 @@ watchEffect(() => {
 
 .close-button {
   position: absolute;
-  top: 8px;
-  right: 8px;
+  top: 8px; right: 8px;
   font-size: 24px;
   color: white;
   background-color: rgba(0, 0, 0, 0.6);
   border: none;
   border-radius: 50%;
-  width: 36px;
-  height: 36px;
+  width: 36px; height: 36px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -345,9 +481,7 @@ watchEffect(() => {
   transition: transform 0.15s ease;
 }
 
-.close-button:hover {
-  transform: scale(1.2);
-}
+.close-button:hover { transform: scale(1.2); }
 
 .confirm-modal {
   background: white;

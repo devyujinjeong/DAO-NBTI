@@ -21,7 +21,6 @@ const loginSuccess = ref(false);
 
 
 const resetPassword = async () => {
-  console.log(form.verifiedPassword+" "+form.password);
   try {
     const response = await fetchResetPassword({
       verifiedPassword: form.verifiedPassword,

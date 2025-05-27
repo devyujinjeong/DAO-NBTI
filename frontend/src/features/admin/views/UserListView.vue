@@ -25,10 +25,8 @@ const fetchUsers = async () => {
     if (filter.value.isDeleted !== null) queryParams.append('isDeleted', filter.value.isDeleted)
     if (filter.value.page !== undefined) queryParams.append('page', filter.value.page-1)
     if (filter.value.size !== undefined) queryParams.append('size', filter.value.size)
-    console.log(queryParams.toString())
     const response = await fetchUserList(queryParams.toString())
     const data = response.data.data
-    console.log(data)
     users.value = data.page.content
     totalPages.value = data.page.totalPages
     //filter.value.size = data.page.numberOfElements
@@ -76,8 +74,8 @@ const changePage = (page) => {
           <label for="filter-deleted">탈퇴 여부</label>
           <select id="filter-deleted" v-model="filter.isDeleted">
             <option :value="null">전체</option>
-            <option :value="'N'">정상</option>
-            <option :value="'Y'">탈퇴</option>
+            <option :value="'N'">X</option>
+            <option :value="'Y'">O</option>
           </select>
 
           <button class="btn" @click="onSearch">검색</button>
@@ -99,10 +97,10 @@ const changePage = (page) => {
           <tr v-for="user in users" :key="user.accountId">
             <td>{{ user.accountId }}</td>
             <td>{{ user.name }}</td>
-            <td>{{ user.gender }}</td>
+            <td>{{ user.gender === 'M' ? '남자' : '여자' }}</td>
             <td>{{ user.birthdate }}</td>
             <td>{{ user.point ?? 0 }}</td>
-            <td>{{ user.isDeleted==="Y" ? '탈퇴' : '정상' }}</td>
+            <td>{{ user.isDeleted==="Y" ? 'O' : 'X' }}</td>
           </tr>
 
           <tr v-if="users.length === 0">

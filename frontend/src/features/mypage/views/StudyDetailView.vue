@@ -3,7 +3,9 @@ import {ref, computed, onMounted} from 'vue'
 import {useRoute} from 'vue-router'
 import BigModal from '@/components/common/BigModal.vue'
 import {fetchStudyDetail, submitObjection as apiSubmitObjection } from '@/features/mypage/api.js'
+import { useToast } from 'vue-toastification'
 
+const toast = useToast()
 const route = useRoute()
 const studyId = route.params.id
 
@@ -79,7 +81,7 @@ function openObjection(problem) {
 async function submitObjection() {
   const reason = objectionReason.value.trim()
   if (!reason) {
-    alert('이의 사유를 입력해주세요.')
+    toast.error('이의 사유를 입력해주세요.')
     return
   }
 
@@ -92,14 +94,14 @@ async function submitObjection() {
     const res = await apiSubmitObjection(payload)
 
     // 성공 시 서버 메시지를 표시하고 모달 닫기
-    alert(res.data.data.message)
+    toast.success('이의제기가 성공적으로 등록되었습니다.')
     objectionVisible.value = false
 
   } catch (err) {
     // validation 에러(400)나 기타 서버 메시지를 그대로 보여줍니다
     const serverMsg = err.response?.data?.message
     console.error('이의 제기 실패', err)
-    alert(serverMsg || '이의 제기 중 오류가 발생했습니다.')
+    toast.error('이의제기 등록에 실패했습니다. 다시 시도해주세요.')
   }
 }
 onMounted(loadDetail)

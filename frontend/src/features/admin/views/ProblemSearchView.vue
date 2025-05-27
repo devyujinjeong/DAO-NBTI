@@ -163,7 +163,7 @@ const paginationRange = computed(() => {
             <th>하위 분야</th>
             <th>난이도</th>
             <th>답안 유형</th>
-            <th></th>
+            <th>상세보기</th>
           </tr>
           </thead>
           <tbody>

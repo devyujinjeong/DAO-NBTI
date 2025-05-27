@@ -91,6 +91,10 @@ const closeModal = async () => {
   position: relative;
 }
 
+a{
+  text-decoration: none;
+}
+
 .header .container {
   align-items: flex-start;
   display: inline-flex;
@@ -151,7 +155,7 @@ const closeModal = async () => {
 }
 
 .button {
-  text-decoration: underline; /* 밑줄 */
+  /* text-decoration: underline;*/ /* 밑줄 */
   cursor: pointer; /* 마우스를 올리면 포인터로 변경 */
   color: #333333; /* 선택적으로 링크 스타일 색상 */
 }

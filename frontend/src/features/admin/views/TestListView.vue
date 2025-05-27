@@ -24,10 +24,8 @@ const loadTestResult = async () => {
     if (filter.value.month !== null) queryParams.append('month', filter.value.month)
     if (filter.value.page !== undefined) queryParams.append('page', filter.value.page-1)
     if (filter.value.size !== undefined) queryParams.append('size', filter.value.size)
-    console.log(queryParams.toString())
     const response = await fetchTestResultList(queryParams.toString())
     const data = response.data.data
-    console.log(data)
     testResults.value = data.content
     totalPages.value = data.pagination.totalPage
     totalItems.value = data.pagination.totalItems
@@ -50,6 +48,14 @@ const changePage = (page) => {
   filter.value.page = page
   loadTestResult()
 }
+
+const formatDateTimeWithWeekday = (datetimeStr) => {
+  const [datePart, timePart] = datetimeStr.split('T'); // ['2025-05-20', '10:18:00']
+  const date = new Date(datePart);
+  const weekdays = '일월화수목금토';
+  const day = weekdays[date.getDay()];
+  return `${datePart} (${day}) ${timePart}`;
+};
 </script>
 
 
@@ -58,7 +64,7 @@ const changePage = (page) => {
 <template>
   <main class="content">
     <section class="section">
-      <h2>회원 조회</h2>
+      <h2>검사 결과 조회</h2>
 
       <!-- 필터 바 -->
       <div class="card">
@@ -96,7 +102,7 @@ const changePage = (page) => {
           <thead>
           <tr>
             <th>회원 ID</th>
-            <th>생성일</th>
+            <th>생성일시</th>
             <th>높은 카테고리</th>
             <th>낮은 카테고리</th>
             <th>총점</th>
@@ -106,13 +112,15 @@ const changePage = (page) => {
           <tbody>
           <tr v-for="testResult in testResults" :key="testResult.testResultId">
             <td>{{ testResult.accountId }}</td>
-            <td>{{ testResult.createdAt }}</td>
+            <td>{{ formatDateTimeWithWeekday(testResult.createdAt) }}</td>
             <td>{{ testResult.highestCategory }}</td>
             <td>{{ testResult.lowestCategory }}</td>
             <td>{{ testResult.totalScore }}</td>
-            <td><RouterLink :to="`/admin/test/${testResult.testResultId}`">
-              상세보기
-            </RouterLink></td>
+            <td>
+              <RouterLink :to="`/admin/test/${testResult.testResultId}`">
+              <button class="detail-btn">상세보기</button>
+              </RouterLink>
+            </td>
 
           </tr>
 
@@ -132,8 +140,6 @@ const changePage = (page) => {
     </section>
   </main>
 </template>
-
-
 
 <style scoped>
 .card { background: #fff; border-radius: 12px; padding: 1.5rem; box-shadow: 0 2px 5px rgba(0,0,0,0.1); margin-bottom: 1rem; }
@@ -167,7 +173,21 @@ const changePage = (page) => {
   border-radius: 8px;
 }
 
-.pagination { display: flex; justify-content: center; align-items: center; gap: 0.5rem; margin-top: 1rem; }
 .pagination button { padding: 0.4rem 0.8rem; border: 1px solid #ddd; background: #fff; border-radius: 4px; cursor: pointer; }
-.pagination button.active { background: #007bff; color: #fff; border-color: #007bff; }
+.pagination button { background: #007bff; color: #fff; border-color: #007bff; }
+
+a{
+  color: #007bff;
+}
+
+.detail-btn {
+  padding: 0.5rem 1rem;
+  border: none;
+  background: #007bff;
+  color: #fff;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 0.9rem;
+}
+
 </style>

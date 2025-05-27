@@ -3,7 +3,7 @@ import {useAuthStore} from "@/stores/auth.js";
 import {refreshUserToken} from "@/features/user/api.js";
 
 const api = axios.create({
-    baseURL: window.env?.VITE_API_BASE_URL || "/boot",
+    baseURL: window.env?.VITE_API_BASE_URL || import.meta.env.VITE_API_BASE_URL,
     headers : { 'Content-Type' : 'application/json' },
     // HttpOnly Cookie 사용하실 경우
     withCredentials : true
@@ -14,6 +14,8 @@ api.interceptors.request.use(config => {
     const authStore = useAuthStore();
     if(authStore.accessToken)
         config.headers.Authorization = `Bearer ${authStore.accessToken}`
+    else if(authStore.tempAccessToken)
+        config.headers.Authorization = `Bearer ${authStore.tempAccessToken}`
     return config
 });
 
