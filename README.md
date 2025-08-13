@@ -244,7 +244,6 @@
   <img src="https://img.shields.io/badge/Junit5-25A162?style=flat&logo=JUnit5&logoColor=white" />
   <img src="https://img.shields.io/badge/Swagger-85EA2D?style=flat&logo=swagger&logoColor=black" />
   <img src="https://img.shields.io/badge/ChatGPT-10A37F?style=flat&logo=openai&logoColor=white" />  
-  <img src="https://img.shields.io/badge/Kakao API-FFCD00?style=flat&logo=kakao&logoColor=black" />
 </div>
 
 ### 🎨 Frontend
@@ -256,6 +255,7 @@
   <img src="https://img.shields.io/badge/Bootstrap-7952B3?style=flat&logo=bootstrap&logoColor=white" />
   <img src="https://img.shields.io/badge/Pinia-FFD300?style=flat&logo=pinia&logoColor=black" />
   <img src="https://img.shields.io/badge/chart.js-FF6384?style=flat&logo=chartdotjs&logoColor=white" />
+  <img src="https://img.shields.io/badge/Kakao API-FFCD00?style=flat&logo=kakao&logoColor=black" />
 </div>
 
 ### 📦 Database
